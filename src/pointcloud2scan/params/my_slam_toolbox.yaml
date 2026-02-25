@@ -1,0 +1,11 @@
+slam_toolbox:
+  ros__parameters:
+    # 這裡必須與你的 TF Tree 一致
+    odom_frame: odom
+    base_frame: base_link
+    scan_topic: /scan
+    
+    # 這是解決模擬器報錯的關鍵
+    transform_publish_period: 0.05
+    transform_timeout: 0.2  # 給予模擬器更多的延遲容忍度
+    use_sim_time: True      # 務必確保這裡也是 True
