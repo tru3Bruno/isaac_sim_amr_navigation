@@ -1,6 +1,6 @@
 # AMR Navigation Workspace
 
-This is a ROS2 navigation and exploration workspace, mainly used for AMR navigation (Nav2) and frontier-based exploration in isaac-sim with Compal AMR.
+This is a ROS2 navigation and exploration workspace, mainly used for AMR navigation (Nav2) and frontier-based exploration in isaac-sim with Compal AMR (.usd is not included).
 
 <div align="center"><a class="reference internal image-reference" href="https://raw.githubusercontent.com/tru3Bruno/isaac_sim_amr_navigation/main/images/amr_nav.gif"><img alt="image" src="https://raw.githubusercontent.com/tru3Bruno/isaac_sim_amr_navigation/main/images/amr_nav.gif" width="800px"/></a></div>
 
