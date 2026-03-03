@@ -84,7 +84,7 @@ source install/setup.bash
 ros2 launch nav2 nav2_launch.py
 ```
 
-### B. Start frontier exploration (requires a working map and Nav2 first)
+### B. Start frontier exploration (requires SLAM and Nav2 first)
 
 ```bash
 source install/setup.bash
@@ -97,7 +97,7 @@ ros2 launch explore_lite explore.launch.py
 - Nav2 (including `nav2_bringup`)
 - `pointcloud_to_laserscan`
 - RViz2
-- `slam_toolbox` (if you need online mapping)
+- `slam_toolbox` (online mapping with frontier exploration)
 
 ## References
 - [ROS2 Explore Lite](https://github.com/robo-friends/m-explore-ros2)
