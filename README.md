@@ -4,9 +4,10 @@ This is a ROS2 navigation and exploration workspace, mainly used for AMR navigat
 
 <div align="center"><a class="reference internal image-reference" href="https://raw.githubusercontent.com/tru3Bruno/isaac_sim_amr_navigation/main/images/amr_nav.gif"><img alt="image" src="https://raw.githubusercontent.com/tru3Bruno/isaac_sim_amr_navigation/main/images/amr_nav.gif" width="800px"/></a></div>
 
-There are 3 main packages under `src/`:
+There are 4 main packages under `src/`:
 - `nav2`: Integrates Nav2 bringup, maps, RViz, and navigation parameters.
 - `pointcloud2scan`: Converts `/point_cloud` to `/scan` using `pointcloud_to_laserscan`.
+- `dual_lidar_nav2`: A dual-lidar Nav2 setup with its own launch file, map, RViz config, and navigation parameters.
 - `explore_lite` (folder name `explore`): A C++ node for frontier-based autonomous exploration.
 
 ## Workspace Structure
@@ -15,6 +16,7 @@ There are 3 main packages under `src/`:
 ros2_ws/
 ├── src/
 │   ├── nav2/
+│   ├── dual_lidar_nav2/
 │   ├── pointcloud2scan/
 │   └── explore/
 ├── build/
@@ -43,17 +45,42 @@ Main files:
 
 ### 2) pointcloud2scan package
 
-Main file:
+Main files:
 - `src/pointcloud2scan/launch/pointcloud2scan_launch.py`
+- `src/pointcloud2scan/launch/dual_lidar_launch.py`
 
 Key points:
-- Subscribes to `cloud_in -> /point_cloud`
-- Publishes `scan -> /scan`
-- Uses `target_frame: rtx_lidar`
+- Single-lidar launch subscribes to `cloud_in -> /point_cloud`
+- Single-lidar launch publishes `scan -> /scan`
+- Single-lidar launch uses `target_frame: rtx_lidar`
+- Dual-lidar launch converts:
+  - `/front/point_cloud -> /front/scan` with `target_frame: front_lidar`
+  - `/rear/point_cloud -> /rear/scan` with `target_frame: rear_lidar`
 
 This package allows Nav2 costmaps to consume `LaserScan` data directly.
 
-### 3) explore_lite package
+### 3) dual_lidar_nav2 package
+
+Main files:
+- `src/dual_lidar_nav2/launch/nav2_launch.py`
+- `src/dual_lidar_nav2/config/nav2_params.yaml`
+- `src/dual_lidar_nav2/maps/latest_map.yaml`
+- `src/dual_lidar_nav2/rviz2/nav2_setup.rviz`
+
+`dual_lidar_nav2/launch/nav2_launch.py` does the following:
+1. Includes `pointcloud2scan/launch/dual_lidar_launch.py` to convert front and rear point clouds into LaserScan topics.
+2. Starts `dual_laser_merger_node` to merge `/front/scan` and `/rear/scan` into `/scan`.
+3. Includes `nav2_bringup/bringup_launch.py`.
+4. Applies the dual-lidar map and Nav2 parameters.
+5. Starts RViz2.
+
+Key topics:
+- Input point clouds: `/front/point_cloud`, `/rear/point_cloud`
+- Per-lidar scans: `/front/scan`, `/rear/scan`
+- Merged scan for AMCL / collision monitor: `/scan`
+- Local costmap obstacle sources: `/front/scan`, `/rear/scan`
+
+### 4) explore_lite package
 
 Main files:
 - `src/explore/launch/explore.launch.py`
@@ -71,6 +98,7 @@ Key points:
 Run in the workspace root:
 
 ```bash
+source /opt/ros/$ROS_DISTRO/setup.bash
 colcon build
 source install/setup.bash
 ```
@@ -84,7 +112,14 @@ source install/setup.bash
 ros2 launch nav2 nav2_launch.py
 ```
 
-### B. Start frontier exploration (requires SLAM and Nav2 first)
+### B. Start dual-lidar navigation (front/rear lidar + merge + Nav2 + RViz)
+
+```bash
+source install/setup.bash
+ros2 launch dual_lidar_nav2 nav2_launch.py
+```
+
+### C. Start frontier exploration (requires SLAM and Nav2 first)
 
 ```bash
 source install/setup.bash
@@ -96,6 +131,7 @@ ros2 launch explore_lite explore.launch.py
 - ROS 2 (matching your OS / distro)
 - Nav2 (including `nav2_bringup`)
 - `pointcloud_to_laserscan`
+- `dual_laser_merger` (for `dual_lidar_nav2`)
 - RViz2
 - `slam_toolbox` (online mapping with frontier exploration)
 
